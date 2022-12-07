@@ -1,0 +1,24 @@
+function rot13(str) {
+  
+  let decoded = str.split('');
+
+  //Iterate over all letters and convert to decoded version
+  for (let i = 0; i < decoded.length; i++){
+    let coded = decoded[i].charCodeAt(0);
+    
+    //if A-M add 13 to charcode and replace with new letter
+    if (coded >= 65 && coded < 78) {
+      decoded[i] = String.fromCharCode(coded + 13);
+    }
+    
+    //if N-Z add 13 to charcode and replace with new letter
+    else if (coded >= 78 && coded <= 90 ) {
+      decoded[i] = String.fromCharCode(coded - 13);
+    }
+    console.log(decoded.join(''))
+  }
+  return decoded.join('');
+}
+
+//test
+rot13("SERR PBQR PNZC!");
