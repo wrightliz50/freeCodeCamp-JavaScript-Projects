@@ -1,0 +1,22 @@
+function palindrome(str) {
+  //lower case all letters and turn into array to easily compare
+  let lowerArr = str.toLowerCase().split('');
+  
+  //only include alphanumeric characters in test
+  const regex = /[a-z0-9]/
+  let palindromeArr = [];
+  lowerArr.forEach(elem => {if (regex.test(elem)) {palindromeArr.push(elem)}});
+  
+  //compare first and last letters to see if they match and remove until 0-1 letters remain
+  while(palindromeArr.length >= 2){
+    if (palindromeArr.pop() !== palindromeArr.shift()){
+      //console.log('false')
+      return false;
+    }
+  }
+  //console.log('true')
+   return true;
+}
+
+//test
+palindrome("My age is 0, 0 si ega ym.");
