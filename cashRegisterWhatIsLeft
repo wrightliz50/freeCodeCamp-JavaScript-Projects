@@ -1,0 +1,77 @@
+function checkCashRegister(price, cash, cid) {
+  
+  let finalDrawerCount = [];
+
+  //define cash in drawer, total amount in CID, and currency values
+  let cashInDrawer = cid;
+  const initialValue = 0;
+  let totalInDrawer = cashInDrawer.flat().filter(elem => typeof elem === 'number').reduce((accumulator, currentValue) => accumulator + currentValue,initialValue);
+  
+  const currencyValues = {
+    'PENNY': 0.01, 'NICKEL': 0.05,'DIME': 0.1,'QUARTER': 0.25,
+    'ONE': 1,'FIVE': 5,'TEN':10, 'TWENTY': 20, 'ONE HUNDRED':100
+  }
+  
+  //find change needed
+  let change = cash - price;
+  console.log(change);
+
+  //close drawer if no more cash in drawer
+  if (totalInDrawer === change){
+    return {status: 'CLOSED',change: cashInDrawer}
+  }
+
+  //insufficient status if not enough cash in drawer for change
+  else if (totalInDrawer < change){
+    return {status: 'INSUFFICIENT_FUNDS',change: []}
+  }
+  
+  let currencyAvailable =([...Object.keys(currencyValues).filter(elem => currencyValues[elem] <= change)]);
+  let changeAvailable = [];
+  for (let i = 0; i < cashInDrawer.length; i++){
+    if (currencyAvailable.includes(cashInDrawer[i][0])){
+      changeAvailable.unshift(cashInDrawer[i])
+    }
+    else {
+      finalDrawerCount.push(cashInDrawer[i]);
+    }
+  }
+
+//make change and determine if exact change is possible
+  while (change > 0){
+    console.log(`change needed is ${change}`)
+    console.log(`length of changeAvailable: ${changeAvailable.length}`)
+    //if the available change in drawer has 0 value, add it to final drawer and remove from available for change
+    if (changeAvailable[0][1] - currencyValues[changeAvailable[0][0]] < 0){
+       finalDrawerCount.push(changeAvailable[0]);
+       changeAvailable.shift();
+     }
+    
+    //removes correct change from available change, reduces change and available change in drawer by the correct amount 
+    else if (changeAvailable[0][1] - currencyValues[changeAvailable[0][0]] >= 0){
+    change -= currencyValues[changeAvailable[0][0]];
+    changeAvailable[0][1] = changeAvailable[0][1] - currencyValues[changeAvailable[0][0]];
+      
+      //removes available change in drawer from list if it is greater than the value of change needed
+      if (parseInt(currencyValues[changeAvailable[0][0]]) > change){
+        finalDrawerCount.push(changeAvailable[0]);
+        changeAvailable.shift();
+      }
+
+      // if there's no more of a coin/dollar type, add it to final drawer count and remove from available for change
+      else if (changeAvailable[0][1] === 0){
+        finalDrawerCount.push(changeAvailable[0]);
+        changeAvailable.shift();
+      }
+    }
+
+    if(changeAvailable.length === 0){
+      return {status: 'INSUFFICIENT_FUNDS',change: []};
+    }
+  }
+
+  return {status:'OPEN', change: finalDrawerCount.concat(changeAvailable)};
+}
+
+//test
+checkCashRegister(18.75, 20, [["PENNY", 1.01], ["NICKEL", 2.05], ["DIME", 3.1], ["QUARTER", 1.25], ["ONE", 0], ["FIVE", 55], ["TEN", 20], ["TWENTY", 60], ["ONE HUNDRED", 100]])
