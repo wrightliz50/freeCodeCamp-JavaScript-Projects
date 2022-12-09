@@ -1,0 +1,85 @@
+function checkCashRegister(price, cash, cid) {
+  
+  //multiply all numbers by 100 to avoid decimal errors in js
+  price *= 100;
+  cash *=100;
+  cid.forEach(elem => elem[1] = Math.round(elem[1]*100));
+
+  //use later to keep track of what change is being given
+  let finalChangeCount = {
+    'ONE HUNDRED':0,'TWENTY': 0,'TEN':0,'FIVE': 0,'ONE': 0,
+    'QUARTER': 0,'DIME': 0,'NICKEL': 0, 'PENNY': 0
+  };
+
+  //define cash in drawer, total amount in CID, and currency values
+  let cashInDrawer = cid;
+  const initialValue = 0;
+  let totalInDrawer = cashInDrawer.flat().filter(elem => typeof elem === 'number').reduce((accumulator, currentValue) => accumulator + currentValue,initialValue);
+  
+  const currencyValues = {
+    'PENNY': 1, 'NICKEL': 5,'DIME': 10,'QUARTER': 25,
+    'ONE': 100,'FIVE': 500,'TEN':1000, 'TWENTY': 2000, 'ONE HUNDRED':10000
+  };
+  
+  //find change needed
+  let change = cash - price;
+
+  //close drawer change needed would leave no more cash in drawer
+   if (totalInDrawer === change){
+    cid.forEach(elem => elem[1] = elem[1]/100);
+    return {status: 'CLOSED',change: cid};
+  }
+
+  //insufficient status if not enough cash in drawer for change
+  else if (totalInDrawer < change){
+    return {status: 'INSUFFICIENT_FUNDS',change: []}
+  }
+  
+  let currencyAvailable =([...Object.keys(currencyValues).filter(elem => currencyValues[elem] <= change)]);
+  let changeAvailable = [];
+  for (let i = 0; i < cashInDrawer.length; i++){
+    if (currencyAvailable.includes(cashInDrawer[i][0])){
+      changeAvailable.unshift(cashInDrawer[i])
+    }
+  }
+
+//make change and determine if exact change is possible
+  
+  while (change > 0){
+  
+    //if the available change in drawer has 0 value or is greater than the value of change needed then remove from available for change
+    if (changeAvailable[0][1] - currencyValues[changeAvailable[0][0]] < 0 || currencyValues[changeAvailable[0][0]] > change){
+       changeAvailable.shift();
+     }
+    
+    //removes correct change from available change, reduces change and available change in drawer by the correct amount 
+    else if (changeAvailable[0][1] - currencyValues[changeAvailable[0][0]] >= 0){
+    change -= currencyValues[changeAvailable[0][0]];
+    changeAvailable[0][1] = changeAvailable[0][1] - currencyValues[changeAvailable[0][0]];
+      
+    //adds change given to change count
+    finalChangeCount[changeAvailable[0][0]] += currencyValues[changeAvailable[0][0]];
+      
+    //removes available change in drawer from list if it is greater than the value of change needed
+    if (currencyValues[changeAvailable[0][0]] > change){
+        changeAvailable.shift();
+      }
+      // if there's no more of a coin/dollar type and remove from available for change
+      else if (changeAvailable[0][1] === 0){
+        changeAvailable.shift();
+      }
+    }
+
+    if(changeAvailable.length === 0 && change > 0){
+      return {status: 'INSUFFICIENT_FUNDS',change: []};
+    }
+  }
+  
+  //convert final change into an array and remove all 0 value currency
+  let finalChange = [...Object.keys(finalChangeCount).filter(elem => finalChangeCount[elem] > 0).map(elem => elem = [elem,finalChangeCount[elem]/100])];
+
+  return {status:'OPEN', change: finalChange};
+}
+
+//test
+checkCashRegister(3.26, 100, [["PENNY", 1.01], ["NICKEL", 2.05], ["DIME", 3.1], ["QUARTER", 4.25], ["ONE", 90], ["FIVE", 55], ["TEN", 20], ["TWENTY", 60], ["ONE HUNDRED", 100]])
