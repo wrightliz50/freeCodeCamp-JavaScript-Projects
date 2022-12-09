@@ -65,7 +65,7 @@ function checkCashRegister(price, cash, cid) {
       }
     }
 
-    if(changeAvailable.length === 0){
+    if(changeAvailable.length === 0 && change > 0){
       return {status: 'INSUFFICIENT_FUNDS',change: []};
     }
   }
